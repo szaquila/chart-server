@@ -1,12 +1,17 @@
-const express = require('express');
+const express = require('express')
 const bodyParser = require('body-parser')
-const app = express();
-const {render_e} = require('./echarts_generator');
-const {render_h} = require('./highcharts_generator');
+const log = require('log-mini')
+const app = express()
+const { render_e } = require('./echarts_generator')
+const { render_h } = require('./highcharts_generator')
+const { render_g } = require('./g2plot_generator')
 
-app.post("/echarts",bodyParser.json(),async function(req,res){
-    //console.log(req);
-    /* let options ={
+app.use(bodyParser.json({limit:'100mb'}));
+app.use(bodyParser.urlencoded({ limit:'100mb', extended: true }));
+
+app.post('/echarts', bodyParser.json(), async function (req, res) {
+  //console.log(req);
+  /* let options ={
         title: {
             text: 'ECharts 入门示例'
         },
@@ -24,18 +29,17 @@ app.post("/echarts",bodyParser.json(),async function(req,res){
             data: [5, 20, 36, 10, 10, 20]
         }]
     };  */
-    //console.log(req);
-    let options = req.body.options;
-    let width = req.body.width;
-    let height = req.body.height;
-    //console.log(options);
-    let base = await render_e(options,width,height);
-    res.send(base);
+  //console.log(req);
+  let options = req.body.options
+  let width = req.body.width
+  let height = req.body.height
+  //console.log(options);
+  let base = await render_e(options, width, height)
+  res.send(base)
 })
 
-app.post("/highcharts",bodyParser.json(),async function(req,res){
-
-    /* var options = {
+app.post('/highcharts', bodyParser.json(), async function (req, res) {
+  /* var options = {
         chart: {
             type: 'bar'                          //指定图表的类型，默认是折线图（line）
         },
@@ -58,11 +62,47 @@ app.post("/highcharts",bodyParser.json(),async function(req,res){
             data: [5, 7, 3]
         }]
     }; */
-    let options = req.body.options;
-    let width = req.body.width;
-    let height = req.body.height;
-    let base = await render_h(options);
-    res.send(base);
+  let options = req.body.options
+  let width = req.body.width
+  let height = req.body.height
+  let base = await render_h(options, width, height)
+  res.send(base)
 })
 
-app.listen(3000);
+app.post('/g2plot', bodyParser.json(), async function (req, res) {
+  // console.log('request', req.body);
+  /* var options = {
+      chart: {
+          type: 'bar'                          //指定图表的类型，默认是折线图（line）
+      },
+      title: {
+          text: '我的第一个图表'                 // 标题
+      },
+      xAxis: {
+          categories: ['苹果', '香蕉', '橙子']   // x 轴分类
+      },
+      yAxis: {
+          title: {
+              text: '吃水果个数'                // y 轴标题
+          }
+      },
+      series: [{                              // 数据列
+          name: '小明',                        // 数据列名
+          data: [1, 0, 4]                     // 数据
+      }, {
+          name: '小红',
+          data: [5, 7, 3]
+      }]
+  }; */
+  let options = req.body.options
+  let width = req.body.width
+  let height = req.body.height
+  let base = await render_g(options, width, height)
+  res.send(base)
+})
+
+log.config({ debug: false, absolute: false })
+log.success('server running at:')
+log.success('>Local: http://localhost:3000/')
+
+app.listen(3000)

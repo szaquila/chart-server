@@ -6,9 +6,20 @@ const render = async function(options,width,height){
     // await page.goto('https://www.baidu.com');
     // await page.screenshot({path:'example.png'});
 
-    await page.setContent(
-        `<div id="container" style="width:${width}px;height:${height}px" ></div>`
-    );
+    const containerElement = `<div id="container" style="width:${width}px;height:${height}px" ></div>`;
+    const content = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>chart</title>
+    </head>
+    <body>
+        ${containerElement}
+    </body>
+    </html>`
+    await page.setContent(content)
 
     //传递options对象到evaluate函数中，挂载到window对象的全局属性中
     await page.evaluate((options)=>{
@@ -22,14 +33,12 @@ const render = async function(options,width,height){
     await page.addScriptTag({
         content:`
         (function (window) {
-            let option =window.chart.options; //浏览器环境下获取window对象中chart的配置项进行初始化
+            let option = window.chart.options; //浏览器环境下获取window对象中chart的配置项进行初始化
             window.myChart = window.echarts.init(document.getElementById('container'), null, {
                 renderer: 'canvas'
             });
             window.myChart.setOption(option);
-            
         })(this);
-        
         `
     });
     let base64 = await page.evaluate(()=>{
@@ -63,7 +72,7 @@ const render = async function(options,width,height){
 
 
 
-/* 
+/*
 Echars 导出图片
 
 
