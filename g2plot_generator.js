@@ -105,18 +105,18 @@ const render = async function (options, width, height) {
 		window.chart = {
 			options: {
 				data: data,
-				height: 340,
+				height: 380,
 				xField: '_time',
 				yField: '_value',
         offsetY: 14,
 				seriesField: '_field',
 				color: ['#7AE17A', '#7A8FC5', '#FF0000', '#FF0000'],
-				smooth: true,
+				// smooth: true,
 				annotations: [
 					{
 						type: 'text',
-						content: content,
 						position: ['min', position],
+						content: content,
 						offsetY: -4,
 						style: {
 							textBaseline: 'bottom',
@@ -128,7 +128,7 @@ const render = async function (options, width, height) {
 						end: ['max', end],
 						style: {
 							stroke: 'red',
-							lineDash: [2, 2],
+							// lineDash: [2, 2],
 						},
 					},
 				],
@@ -188,6 +188,9 @@ const render = async function (options, width, height) {
 					type: 'timeCat',
 					title: {
 						text: s95._start + ' 至 ' + s95._stop,
+            style: {
+              fontWeight: 700,
+            },
 					},
 					grid: {
 						line: {
@@ -196,18 +199,28 @@ const render = async function (options, width, height) {
 								lineDash: [4, 2],
 							},
 						},
-						alternateColor: 'rgba(0,0,0,0.05)',
+						// alternateColor: 'rgba(0,0,0,0.05)',
 					},
+					label: {
+						formatter: (v) => {
+							return v.substr(0,16);
+						},
+					},
+          tickCount: 16,
 				},
 				yAxis: {
 					title: {
 						text: 'bits per second',
+            style: {
+              fontWeight: 700,
+            },
 					},
 					label: {
 						formatter: (v) => {
 							return v.replace('.000', '');
 						},
 					},
+          tickCount: 8,
 				},
         appendPadding: [30, 0, 0, 0],
         animate: false,
@@ -254,7 +267,7 @@ const render = async function (options, width, height) {
               }
 
               window.chart.base64 = dataURL;
-            }, 1200);
+            }, 1500);
           })(this);
         `;
 	await page.evaluate((scriptText) => {
@@ -264,7 +277,7 @@ const render = async function (options, width, height) {
 		document.body.appendChild(el);
 	}, scriptToInject);
 
-	await page.waitForTimeout(1250);
+	await page.waitForTimeout(1550);
 	// await page.screenshot({ type: 'png', path: 'screenshot.png' });
 	// console.log((await page.content()).toString());
 
