@@ -1,7 +1,9 @@
 const puppeteer = require('puppeteer');
 
 const render = async function(options,width,height){
-    const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({
+    defaultViewport: { width: 1024, height: 768 },
+  });
     const page = await browser.newPage();
     // await page.goto('https://www.baidu.com');
     // await page.screenshot({path:'example.png'});

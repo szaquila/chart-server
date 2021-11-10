@@ -1,7 +1,9 @@
 const puppeteer = require('puppeteer');
 
 const render = async function (options, width, height) {
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({
+    defaultViewport: { width: 1024, height: 768 },
+  });
 	const page = await browser.newPage();
 	await page.setDefaultNavigationTimeout(0);
 	// await page.goto('https://www.baidu.com');
@@ -28,7 +30,7 @@ const render = async function (options, width, height) {
   </html>`;
 	await page.setContent(content);
 
-	//传递options对象到evaluate函数中，挂载到window对象的全局属性中
+	//传递options对象到evaluate函数中，挂载到window对象的全局属性中
 	await page.evaluate((options) => {
 		// 日期格式化
 		const parseTime = (time, pattern) => {
@@ -96,7 +98,7 @@ const render = async function (options, width, height) {
 		let position = s95.in95;
 		let start = s95.in95;
 		let end = s95.in95;
-		if (options.direct === '0') {
+		if (options.direct === true) {
 			content = '流出95%';
 			position = s95.out95;
 			start = s95.out95;
@@ -105,7 +107,8 @@ const render = async function (options, width, height) {
 		window.chart = {
 			options: {
 				data: data,
-				height: 380,
+				autoFit: true,
+				height: 360,
 				xField: '_time',
 				yField: '_value',
         offsetY: 14,
@@ -203,7 +206,7 @@ const render = async function (options, width, height) {
 					},
 					label: {
 						formatter: (v) => {
-							return v.substr(0,16);
+							return v.substr(0, 16);
 						},
 					},
           tickCount: 16,
@@ -222,7 +225,7 @@ const render = async function (options, width, height) {
 					},
           tickCount: 8,
 				},
-        appendPadding: [30, 0, 0, 0],
+        appendPadding: [40, 10, 0, 10],
         animate: false,
         theme: {
           styleSheet: {
@@ -242,32 +245,34 @@ const render = async function (options, width, height) {
             let option = window.chart.options; //浏览器环境下获取window对象中chart的配置项进行初始化
             // console.log('option');
             const line = new Line('container', option);
+            line.on('afterrender', () => {
+              setTimeout(() => {
+                const canvas = line.chart.getCanvas();
+                const renderer = line.chart.renderer;
+                const canvasDom = canvas.get('el');
+
+                let dataURL = '';
+                if (renderer === 'svg') {
+                  const clone = canvasDom.cloneNode(true);
+                  const svgDocType = document.implementation.createDocumentType(
+                    'svg',
+                    '-//W3C//DTD SVG 1.1//EN',
+                    'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'
+                  );
+                  const svgDoc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', svgDocType);
+                  svgDoc.replaceChild(clone, svgDoc.documentElement);
+                  const svgData = new XMLSerializer().serializeToString(svgDoc);
+                  dataURL = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svgData);
+                } else if (renderer === 'canvas') {
+                  dataURL = canvasDom.toDataURL('image/png');
+                }
+
+                window.chart.base64 = dataURL;
+                // console.log(dataURL);
+              }, 150);
+            });
             line.render();
             // console.log('render');
-
-            setTimeout(() => {
-              const canvas = line.chart.getCanvas();
-              const renderer = line.chart.renderer;
-              const canvasDom = canvas.get('el');
-
-              let dataURL = '';
-              if (renderer === 'svg') {
-                const clone = canvasDom.cloneNode(true);
-                const svgDocType = document.implementation.createDocumentType(
-                  'svg',
-                  '-//W3C//DTD SVG 1.1//EN',
-                  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'
-                );
-                const svgDoc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', svgDocType);
-                svgDoc.replaceChild(clone, svgDoc.documentElement);
-                const svgData = new XMLSerializer().serializeToString(svgDoc);
-                dataURL = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(svgData);
-              } else if (renderer === 'canvas') {
-                dataURL = canvasDom.toDataURL('image/png');
-              }
-
-              window.chart.base64 = dataURL;
-            }, 1500);
           })(this);
         `;
 	await page.evaluate((scriptText) => {
@@ -277,7 +282,8 @@ const render = async function (options, width, height) {
 		document.body.appendChild(el);
 	}, scriptToInject);
 
-	await page.waitForTimeout(1550);
+  await page.waitForFunction('typeof window.chart.base64 !== "undefined"');
+	// await page.waitForTimeout(150);
 	// await page.screenshot({ type: 'png', path: 'screenshot.png' });
 	// console.log((await page.content()).toString());
 
