@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 
 const render = async function(options,width,height){
 	const browser = await puppeteer.launch({
-    defaultViewport: { width: 1024, height: 768 },
+    defaultViewport: { width: 1280, height: 800 },
   });
     const page = await browser.newPage();
     // await page.goto('https://www.baidu.com');

@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 
 const render = async function (options, width, height) {
 	const browser = await puppeteer.launch({
-    defaultViewport: { width: 1024, height: 768 },
+    defaultViewport: { width: 1280, height: 800 },
   });
 	const page = await browser.newPage();
 	await page.setDefaultNavigationTimeout(0);
@@ -34,13 +34,13 @@ const render = async function (options, width, height) {
 	await page.evaluate((options) => {
 		// 日期格式化
 		const parseTime = (time, pattern) => {
-			if (arguments.length === 0 || !time) {
-				return null;
-			}
-			if (time.indexOf('01-01-01') > -1) {
-				return '-';
-			}
-			const format = pattern || '{y}-{m}-{d} {h}:{i}:{s}';
+			// if (arguments.length === 0 || !time) {
+			// 	return null;
+			// }
+			// if (time.indexOf('01-01-01') > -1) {
+			// 	return '-';
+			// }
+  		const format = pattern || '{y}-{m}-{d} {h}:{i}:{s}';
 			let date;
 			if (typeof time === 'object') {
 				date = time;
@@ -53,7 +53,7 @@ const render = async function (options, width, height) {
 				}
 				date = new Date(time);
 			}
-			const formatObj = {
+  		const formatObj = {
 				y: date.getFullYear(),
 				m: date.getMonth() + 1,
 				d: date.getDate(),
@@ -111,8 +111,8 @@ const render = async function (options, width, height) {
 				height: 360,
 				xField: '_time',
 				yField: '_value',
-        offsetY: 14,
 				seriesField: '_field',
+        appendPadding: [20, 20, 0, 20],
 				color: ['#7AE17A', '#7A8FC5', '#FF0000', '#FF0000'],
 				// smooth: true,
 				annotations: [
@@ -149,16 +149,17 @@ const render = async function (options, width, height) {
 							return bpsFormat(v);
 						},
 					},
-					// _time: {
-					// 	formatter: (v) => {
-					// 		return parseTime(v);
-					// 	},
-					// },
+					_time: {
+						formatter: (v) => {
+							return parseTime(v);
+						},
+					},
 				},
 				legend: {
 					layout: 'horizontal',
 					position: 'bottom',
-					offsetY: 14,
+					offsetX: 13,
+					offsetY: 13,
 					items: [
 						{
 							name: '\n\n流入  95%: ' + bpsFormat(s95.in95) + '\n\n', //  + '最小: ' + bpsFormat(s95.in95Min) + ' 最大: ' + bpsFormat(s95.in95Max)
@@ -209,7 +210,7 @@ const render = async function (options, width, height) {
 							return v.substr(0, 16);
 						},
 					},
-          tickCount: 16,
+          tickInterval: 288,
 				},
 				yAxis: {
 					title: {
@@ -223,9 +224,8 @@ const render = async function (options, width, height) {
 							return v.replace('.000', '');
 						},
 					},
-          tickCount: 8,
+          tickCount: 10,
 				},
-        appendPadding: [40, 10, 0, 10],
         animate: false,
         theme: {
           styleSheet: {
@@ -246,11 +246,12 @@ const render = async function (options, width, height) {
             // console.log('option');
             const line = new Line('container', option);
             line.on('afterrender', () => {
-              setTimeout(() => {
-                const canvas = line.chart.getCanvas();
-                const renderer = line.chart.renderer;
-                const canvasDom = canvas.get('el');
+              const renderer = line.chart.renderer;
+              const canvas = line.chart.getCanvas();
+              const canvasDom = canvas.get('el');
+              canvas.get('timeline').stopAllAnimations();
 
+              setTimeout(() => {
                 let dataURL = '';
                 if (renderer === 'svg') {
                   const clone = canvasDom.cloneNode(true);
@@ -270,6 +271,9 @@ const render = async function (options, width, height) {
                 window.chart.base64 = dataURL;
                 // console.log(dataURL);
               }, 150);
+            });
+            line.on('afterpaint', () => {
+              console.log('paint');
             });
             line.render();
             // console.log('render');
