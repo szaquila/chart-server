@@ -98,7 +98,7 @@ const render = async function (options, width, height) {
 		let position = s95.in95;
 		let start = s95.in95;
 		let end = s95.in95;
-		if (options.direct === true) {
+		if (options.direct === true || options.direct === '0') {
 			content = '流出95%';
 			position = s95.out95;
 			start = s95.out95;
