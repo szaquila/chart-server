@@ -207,8 +207,11 @@ const render = async function (options, width, height) {
 					},
 					label: {
 						formatter: (v) => {
-							return v.substr(0, 16);
+							return v.substr(5, 11).replace(' ', '\n');
 						},
+            style: {
+              fontSize: 9,
+            },
 					},
           tickInterval: 288,
 				},
