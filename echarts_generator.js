@@ -1,14 +1,15 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer')
 
-const render = async function(options,width,height){
-	const browser = await puppeteer.launch({
-    defaultViewport: { width: 1280, height: 800 },
-  });
-    const page = await browser.newPage();
+const render = async function (options, width, height) {
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox'],
+        defaultViewport: { width: 1280, height: 800 },
+    })
+    const page = await browser.newPage()
     // await page.goto('https://www.baidu.com');
     // await page.screenshot({path:'example.png'});
 
-    const containerElement = `<div id="container" style="width:${width}px;height:${height}px" ></div>`;
+    const containerElement = `<div id="container" style="width:${width}px;height:${height}px" ></div>`
     const content = `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -24,16 +25,16 @@ const render = async function(options,width,height){
     await page.setContent(content)
 
     //传递options对象到evaluate函数中，挂载到window对象的全局属性中
-    await page.evaluate((options)=>{
-        window.chart={
-            options
+    await page.evaluate((options) => {
+        window.chart = {
+            options,
         }
-    },options);
+    }, options)
 
-    await page.addScriptTag({url:'https://cdn.bootcss.com/echarts/4.4.0-rc.1/echarts-en.common.min.js'});
+    await page.addScriptTag({ url: 'https://cdn.bootcss.com/echarts/4.4.0-rc.1/echarts-en.common.min.js' })
 
     await page.addScriptTag({
-        content:`
+        content: `
         (function (window) {
             let option = window.chart.options; //浏览器环境下获取window对象中chart的配置项进行初始化
             window.myChart = window.echarts.init(document.getElementById('container'), null, {
@@ -41,16 +42,16 @@ const render = async function(options,width,height){
             });
             window.myChart.setOption(option);
         })(this);
-        `
-    });
-    let base64 = await page.evaluate(()=>{
-        return myChart.getDataURL();
-    });
+        `,
+    })
+    let base64 = await page.evaluate(() => {
+        return myChart.getDataURL()
+    })
     //console.log(base64);
     //await page.screenshot({path:'example.png'});
-    browser.close();
-    return base64;
-};
+    browser.close()
+    return base64
+}
 
 /* let options ={
     title: {
@@ -71,8 +72,6 @@ const render = async function(options,width,height){
     }]
 }; */
 //render(options);
-
-
 
 /*
 Echars 导出图片
@@ -101,4 +100,4 @@ img.src = myChart.getDataURL({
 });
 */
 
-exports.render_e = render;
+exports.render_e = render
